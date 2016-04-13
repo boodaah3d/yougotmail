@@ -2,8 +2,8 @@
 ## Title: YouGotMail
 ## Notes: Simple addon to play "You got mail" when you receive mail.
 ## Author: Boodaah
-## Version: 6.0.2.001
-## SavedVariablesPerCharacter: YouGotMailDB
+## Version: 6.0.2.002
+## SavedVariablesPerCharacter: YouGotMailOptions
 ## X-eMail: boodaah@me.com
 ## X-License: Public Domain
 
