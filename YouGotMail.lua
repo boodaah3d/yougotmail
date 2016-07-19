@@ -169,7 +169,6 @@ end
 
 local function OnClick(self)
    UIDropDownMenu_SetSelectedID(voice, self:GetID())
-   print("test")
    PlayTrack(self:GetID())
    PickTrack(self:GetID())
 end
