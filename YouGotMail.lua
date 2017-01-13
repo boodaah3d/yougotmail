@@ -6,7 +6,6 @@ local debugmode = false
 local _G = _G
 
 local Options = CreateFrame("Frame", nil, InterfaceOptionsFramePanelContainer)
-local voice = CreateFrame("Button", "voice", Options, "UIDropDownMenuTemplate")
 
 local items = {
     "AOL You Got Mail",
@@ -61,9 +60,9 @@ for _ in pairs(voices) do count = count + 1 end
 -----------------
 function CheckTheMail()
     if (HasNewMail()) then
-        Debug("YGM HasNewMail = true")
-        Debug(StatusMail())
-        Debug(StatusTime())
+        Debug(CurrentMailStatus())
+        Debug(CurrentMailTime())
+        Debug(CurrentVoice())
         if (YouGotMailOptions.mail == false or time() > YouGotMailOptions.time + 3600) then
             YouGotMailOptions.mail = true
             YouGotMailOptions.time = time()
@@ -72,7 +71,7 @@ function CheckTheMail()
             Debug("YGM spam filtered: " .. time())
         end
     else
-        Debug("YGM HasNewMail = false")
+        Debug(CurrentMailStatus())
         ResetMailFlags()
     end
 end
@@ -81,8 +80,7 @@ function Debug(text)
     if debugmode then print(text) end
 end
 
-function PickTrack(n)
-    -- check that n is a number
+function ChangeTrack(n)
     YouGotMailOptions.voice = tonumber(n)
 end
 
@@ -91,7 +89,6 @@ function PlayNotification()
 end
 
 function PlayTrack(n)
-    -- check that n is a number
     PlaySoundFile(voices[tonumber(n)])
 end
 
@@ -99,22 +96,16 @@ function RandomTrack()
     PlayTrack(random(count))
 end
 
-function Status()
-    print(StatusVoice())
-    print(StatusMail())
-    print(StatusTime())
-end
-
-function StatusVoice()
-    if YouGotMailOptions.voice then return("YGM voice: " .. YouGotMailOptions.voice) end
-end
-
-function StatusMail()
+function CurrentMailStatus()
     if YouGotMailOptions.mail then return("YGM mail: true") else return("YGM mail: false") end
 end
 
-function StatusTime()
+function CurrentMailTime()
     if YouGotMailOptions.time then return("YGM time: " .. YouGotMailOptions.time) end
+end
+
+function CurrentVoice()
+    if YouGotMailOptions.voice then return("YGM voice: " .. YouGotMailOptions.voice) end
 end
 
 function ResetMailFlags()
@@ -167,21 +158,14 @@ end
 -- Options
 -----------------
 
-local function OnClick(self)
-   UIDropDownMenu_SetSelectedID(voice, self:GetID())
-   PlayTrack(self:GetID())
-   PickTrack(self:GetID())
-end
-
-local function initialize(self, level)
-   local info = UIDropDownMenu_CreateInfo()
-   for k,v in pairs(items) do
-      info = UIDropDownMenu_CreateInfo()
-      info.value = k
-      info.text = v
-      info.func = OnClick
-      UIDropDownMenu_AddButton(info, level)
-   end
+local function UncheckAllRadios()
+    local frame = EnumerateFrames()
+    while frame do
+        if frame:GetName() and string.find(frame:GetName(), "ygmRadio") then
+            frame:SetChecked(false)
+        end
+        frame = EnumerateFrames(frame)
+    end
 end
 
 local function CreateOptionsPanel()
@@ -217,20 +201,31 @@ local function CreateOptionsPanel()
     desc:SetPoint("TOPLEFT", title, "BOTTOMLEFT", 0, 20)
     desc:SetText("An addon that notifies you when you have mail.")
 
-    voice:ClearAllPoints()
-    voice:SetPoint("CENTER", 0, 0)
-    voice:Show()
-
-    UIDropDownMenu_Initialize(voice, initialize)
-    UIDropDownMenu_SetWidth(voice, 400)
-    UIDropDownMenu_SetButtonWidth(voice, 124)
-    UIDropDownMenu_SetSelectedID(voice, YouGotMailOptions.voice)
-    UIDropDownMenu_JustifyText(voice, "LEFT")
+    for k,v in pairs(items) do
+        radioName = "ygmRadio" .. k
+        yoffset = -50 - (k*20)
+        local frame = CreateFrame("CheckButton", radioName, Options, "UIRadioButtonTemplate")
+        frame:SetHeight(20)
+        frame:SetWidth(20)
+        frame:ClearAllPoints()
+        frame:SetPoint("TOPLEFT", 50, yoffset)
+        _G[frame:GetName() .. "Text"]:SetText(v)
+        if k == YouGotMailOptions.voice then
+            frame:SetChecked(true)
+        else
+            frame:SetChecked(false)
+        end
+        frame:SetScript("OnClick", function(self)
+            UncheckAllRadios()
+            self:SetChecked(true)
+            ChangeTrack(k)
+        end)
+    end
 
     local playVoice = CreateFrame("Button", nil, Options, "UIPanelButtonTemplate")
     playVoice:SetWidth(175)
     playVoice:SetHeight(24)
-    playVoice:SetPoint("TOP", voice, "BOTTOM", 0, -20)
+    playVoice:SetPoint("BOTTOM", 0, 20)
     playVoice:SetText("Play Voice")
     playVoice:RegisterForClicks("AnyUp")
     playVoice:SetScript("OnClick", function()
