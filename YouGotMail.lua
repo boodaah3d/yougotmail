@@ -27,7 +27,8 @@ local items = {
     "Troll male #3 (voiced by Zuljawa)",
     "Troll male #4 (voiced by Zuljawa)",
     "Undead male #1 (voiced by Rufphus)",
-    "Undead male #2 (voiced by Saenokda)"
+    "Undead male #2 (voiced by Saenokda)",
+    "I got mail, YAY! (from Crank Yankers)"
 }
 
 local voices = {}
@@ -51,6 +52,7 @@ tinsert(voices, "Interface\\Addons\\YouGotMail\\voices\\troll_male_3_zuljawa.ogg
 tinsert(voices, "Interface\\Addons\\YouGotMail\\voices\\troll_male_4_zuljawa.ogg")
 tinsert(voices, "Interface\\Addons\\YouGotMail\\voices\\undead_male_1_rufphus.ogg")
 tinsert(voices, "Interface\\Addons\\YouGotMail\\voices\\undead_male_2_saenokda.ogg")
+tinsert(voices, "Interface\\Addons\\YouGotMail\\voices\\i_got_mail_yay_i_got_mail_yay.ogg")
 
 local count = 0
 for _ in pairs(voices) do count = count + 1 end
