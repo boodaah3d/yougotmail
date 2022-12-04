@@ -131,28 +131,7 @@ end
 -- Slash Commands
 -----------------
 function SlashCommand()
-    InterfaceOptionsFrame:Show()
-    InterfaceOptionsFrameTab2:Click()
-    InterfaceOptionsFrameAddOnsListScrollBar:SetValue(0)
-
-    local buttonHeight = InterfaceOptionsFrameAddOnsButton1:GetHeight()
-    local buttons = InterfaceOptionsFrameAddOns.buttons;
-    local buttonClicked = false
-    local firstButton = nil
-
-    while InterfaceOptionsFrameAddOnsButton1:GetText() ~= firstButton do
-        firstButton = InterfaceOptionsFrameAddOnsButton1:GetText()
-        for i = 1, #buttons do
-            local button = _G["InterfaceOptionsFrameAddOnsButton" .. i]
-            if button:GetText() == "YouGotMail" then
-                button:Click()
-                buttonClicked = true
-                break
-            end
-        end
-        if buttonClicked then break end
-        InterfaceOptionsFrameAddOnsListScrollBar:SetValue(#buttons * buttonHeight)
-    end
+    InterfaceOptionsFrame_OpenToCategory("YouGotMail")
 end
 
 
@@ -174,33 +153,31 @@ local function CreateOptionsPanel()
     Options:Hide()
     Options.name = "YouGotMail"
 
-    local panelWidth = InterfaceOptionsFramePanelContainer:GetWidth() -- ~623
+    local panelWidth = 600 -- InterfaceOptionsFramePanelContainer:GetWidth() -- ~623
     local wideWidth = panelWidth - 40
 
     local title = Options:CreateFontString(nil, "BACKGROUND", "GameFontNormalLarge")
     title:SetJustifyH("LEFT")
     title:SetJustifyV("BOTTOM")
     title:SetText(GetAddOnMetadata(addonName, "Title"))
-    title:SetPoint("TOPLEFT", 16, -16)
+    title:SetPoint("TOPLEFT", 10, -10)
 
     local version = Options:CreateFontString(nil, "BACKGROUND", "GameFontNormalSmall")
     version:SetJustifyH("LEFT")
     version:SetJustifyV("BOTTOM")
     version:SetText("version " .. GetAddOnMetadata(addonName, "Version"))
-    version:SetPoint("BOTTOMLEFT", title, "BOTTOMRIGHT", 4, 2)
+    version:SetPoint("BOTTOMLEFT", title, "BOTTOMRIGHT", 5, 2)
 
     local author = Options:CreateFontString(nil, "BACKGROUND", "GameFontNormalSmall")
     author:SetJustifyH("LEFT")
     author:SetJustifyV("BOTTOM")
     author:SetText("by " .. GetAddOnMetadata(addonName, "Author"))
-    author:SetPoint("BOTTOMLEFT", version, "BOTTOMRIGHT", 4, 0)
+    author:SetPoint("BOTTOMLEFT", version, "BOTTOMRIGHT", 5, 0)
 
     local desc = Options:CreateFontString(nil, "BACKGROUND", "GameFontHighlight")
     desc:SetJustifyH("LEFT")
     desc:SetJustifyV("BOTTOM")
-    -- desc:SetTextColor(255, 255, 255, 1)
-    desc:SetSize(wideWidth, 40)
-    desc:SetPoint("TOPLEFT", title, "BOTTOMLEFT", 0, 20)
+    desc:SetPoint("TOPLEFT", 10, -30)
     desc:SetText("An addon that notifies you when you have mail.")
 
     for k,v in pairs(items) do
@@ -210,7 +187,7 @@ local function CreateOptionsPanel()
         frame:SetHeight(20)
         frame:SetWidth(20)
         frame:ClearAllPoints()
-        frame:SetPoint("TOPLEFT", 50, yoffset)
+        frame:SetPoint("TOPLEFT", 20, yoffset)
         _G[frame:GetName() .. "Text"]:SetText(v)
         if k == YouGotMailOptions.voice then
             frame:SetChecked(true)
