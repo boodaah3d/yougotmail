@@ -1,252 +1,168 @@
------------------
+-- Saved variables
+if not YouGotMail_SavedVars then
+    YouGotMail_SavedVars = {}
+end
+
+if not YouGotMail_SavedVars.voice then
+    YouGotMail_SavedVars.voice = 1
+end
+
+if not YouGotMail_SavedVars.mail then
+    YouGotMail_SavedVars.mail = false
+end
+
+if not YouGotMail_SavedVars.time or YouGotMail_SavedVars.time == nil then
+    YouGotMail_SavedVars.time = 0
+end
+
 -- Variables
------------------
 local addonName, addonTable = ...
 local debugmode = false
 local _G = _G
 
-local Options = CreateFrame("Frame", nil, InterfaceOptionsFramePanelContainer)
+local category = Settings.RegisterVerticalLayoutCategory("YouGotMail")
 
-local items = {
-    "AOL You Got Mail",
-    "Illidan (voiced by Scooba)",
-    "Blood Elf male #1 (voiced by Rufphus)",
-    "Blood Elf male #2 (voiced by Saenokda)",
-    "Draenei male #1 (voiced by Saenokda)",
-    "Dwarf male #1 (voiced by Toady)",
-    "Gnome male #1 (voiced by Toady)",
-    "Gnome male #2 (voiced by Scooba)",
-    "Goblin male #1 (voiced by Toady)",
-    "Goblin male #2 (voiced by Toady)",
-    "Human male #1 (voiced by Saenokda)",
-    "Human male #2 (voiced by Saenokda)",
-    "Tauren male #1 (voiced by Rufphus)",
-    "Tauren male #2 (voiced by Rufphus)",
-    "Troll male #1 (voiced by Zuljawa)",
-    "Troll male #2 (voiced by Zuljawa)",
-    "Troll male #3 (voiced by Zuljawa)",
-    "Troll male #4 (voiced by Zuljawa)",
-    "Undead male #1 (voiced by Rufphus)",
-    "Undead male #2 (voiced by Saenokda)",
-    "I got mail, YAY! (from Crank Yankers)"
+local voices = {
+    "Interface\\AddOns\\YouGotMail\\YouGotMail.ogg",
+    "Interface\\Addons\\YouGotMail\\voices\\_illidan_1_scooba.ogg",
+    "Interface\\Addons\\YouGotMail\\voices\\blood_elf_male_1_rufphus.ogg",
+    "Interface\\Addons\\YouGotMail\\voices\\blood_elf_male_2_saenokda.ogg",
+    "Interface\\Addons\\YouGotMail\\voices\\draenei_male_1_saenokda.ogg",
+    "Interface\\Addons\\YouGotMail\\voices\\dwarf_male_1_toady.ogg",
+    "Interface\\Addons\\YouGotMail\\voices\\gnome_male_1_toady.ogg",
+    "Interface\\Addons\\YouGotMail\\voices\\gnome_male_2_scooba.ogg",
+    "Interface\\Addons\\YouGotMail\\voices\\goblin_male_1_toady.ogg",
+    "Interface\\Addons\\YouGotMail\\voices\\goblin_male_2_toady.ogg",
+    "Interface\\Addons\\YouGotMail\\voices\\human_male_1_saenokda.ogg",
+    "Interface\\Addons\\YouGotMail\\voices\\human_male_2_saenokda.ogg",
+    "Interface\\Addons\\YouGotMail\\voices\\tauren_male_1_rufphus.ogg",
+    "Interface\\Addons\\YouGotMail\\voices\\tauren_male_2_rufphus.ogg",
+    "Interface\\Addons\\YouGotMail\\voices\\troll_male_1_zuljawa.ogg",
+    "Interface\\Addons\\YouGotMail\\voices\\troll_male_2_zuljawa.ogg",
+    "Interface\\Addons\\YouGotMail\\voices\\troll_male_3_zuljawa.ogg",
+    "Interface\\Addons\\YouGotMail\\voices\\troll_male_4_zuljawa.ogg",
+    "Interface\\Addons\\YouGotMail\\voices\\undead_male_1_rufphus.ogg",
+    "Interface\\Addons\\YouGotMail\\voices\\undead_male_2_saenokda.ogg",
+    "Interface\\Addons\\YouGotMail\\voices\\i_got_mail_yay_i_got_mail_yay.ogg"
 }
 
-local voices = {}
-tinsert(voices, "Interface\\AddOns\\YouGotMail\\YouGotMail.ogg")
-tinsert(voices, "Interface\\Addons\\YouGotMail\\voices\\_illidan_1_scooba.ogg")
-tinsert(voices, "Interface\\Addons\\YouGotMail\\voices\\blood_elf_male_1_rufphus.ogg")
-tinsert(voices, "Interface\\Addons\\YouGotMail\\voices\\blood_elf_male_2_saenokda.ogg")
-tinsert(voices, "Interface\\Addons\\YouGotMail\\voices\\draenei_male_1_saenokda.ogg")
-tinsert(voices, "Interface\\Addons\\YouGotMail\\voices\\dwarf_male_1_toady.ogg")
-tinsert(voices, "Interface\\Addons\\YouGotMail\\voices\\gnome_male_1_toady.ogg")
-tinsert(voices, "Interface\\Addons\\YouGotMail\\voices\\gnome_male_2_scooba.ogg")
-tinsert(voices, "Interface\\Addons\\YouGotMail\\voices\\goblin_male_1_toady.ogg")
-tinsert(voices, "Interface\\Addons\\YouGotMail\\voices\\goblin_male_2_toady.ogg")
-tinsert(voices, "Interface\\Addons\\YouGotMail\\voices\\human_male_1_saenokda.ogg")
-tinsert(voices, "Interface\\Addons\\YouGotMail\\voices\\human_male_2_saenokda.ogg")
-tinsert(voices, "Interface\\Addons\\YouGotMail\\voices\\tauren_male_1_rufphus.ogg")
-tinsert(voices, "Interface\\Addons\\YouGotMail\\voices\\tauren_male_2_rufphus.ogg")
-tinsert(voices, "Interface\\Addons\\YouGotMail\\voices\\troll_male_1_zuljawa.ogg")
-tinsert(voices, "Interface\\Addons\\YouGotMail\\voices\\troll_male_2_zuljawa.ogg")
-tinsert(voices, "Interface\\Addons\\YouGotMail\\voices\\troll_male_3_zuljawa.ogg")
-tinsert(voices, "Interface\\Addons\\YouGotMail\\voices\\troll_male_4_zuljawa.ogg")
-tinsert(voices, "Interface\\Addons\\YouGotMail\\voices\\undead_male_1_rufphus.ogg")
-tinsert(voices, "Interface\\Addons\\YouGotMail\\voices\\undead_male_2_saenokda.ogg")
-tinsert(voices, "Interface\\Addons\\YouGotMail\\voices\\i_got_mail_yay_i_got_mail_yay.ogg")
-
-local count = 0
-for _ in pairs(voices) do count = count + 1 end
-
------------------
 -- Functions
------------------
-function CheckTheMail()
-    if (HasNewMail()) then
-        Debug(CurrentMailStatus())
-        Debug(CurrentMailTime())
-        Debug(CurrentVoice())
-        if (YouGotMailOptions.mail == false or time() > YouGotMailOptions.time + 3600) then
-            YouGotMailOptions.mail = true
-            YouGotMailOptions.time = time()
-            PlayNotification()
-        else
-            Debug("YGM spam filtered: " .. time())
-        end
-    else
-        Debug(CurrentMailStatus())
-        ResetMailFlags()
-    end
+local function GetOptions()
+    local container = Settings.CreateControlTextContainer()
+    container:Add(1, "AOL You Got Mail")
+    container:Add(2, "Illidan (voiced by Scooba)")
+    container:Add(3, "Blood Elf male #1 (voiced by Rufphus)")
+    container:Add(4, "Blood Elf male #2 (voiced by Saenokda)")
+    container:Add(5, "Draenei male #1 (voiced by Saenokda)")
+    container:Add(6, "Dwarf male #1 (voiced by Toady)")
+    container:Add(7, "Gnome male #1 (voiced by Toady)")
+    container:Add(8, "Gnome male #2 (voiced by Scooba)")
+    container:Add(9, "Goblin male #1 (voiced by Toady)")
+    container:Add(10, "Goblin male #2 (voiced by Toady)")
+    container:Add(11, "Human male #1 (voiced by Saenokda)")
+    container:Add(12, "Human male #2 (voiced by Saenokda)")
+    container:Add(13, "Tauren male #1 (voiced by Rufphus)")
+    container:Add(14, "Tauren male #2 (voiced by Rufphus)")
+    container:Add(15, "Troll male #1 (voiced by Zuljawa)")
+    container:Add(16, "Troll male #2 (voiced by Zuljawa)")
+    container:Add(17, "Troll male #3 (voiced by Zuljawa)")
+    container:Add(18, "Troll male #4 (voiced by Zuljawa)")
+    container:Add(19, "Undead male #1 (voiced by Rufphus)")
+    container:Add(20, "Undead male #2 (voiced by Saenokda)")
+    container:Add(21, "I got mail, YAY! (from Crank Yankers)")
+    return container:GetData()
 end
 
 function Debug(text)
     if debugmode then print(text) end
 end
 
-function ChangeTrack(n)
-    YouGotMailOptions.voice = tonumber(n)
-end
-
-function PlayNotification()
-    PlayTrack(YouGotMailOptions.voice)
-end
-
-function PlayTrack(n)
+local function PlayTrack(n)
     PlaySoundFile(voices[tonumber(n)])
 end
 
-function RandomTrack()
-    PlayTrack(random(count))
-end
-
-function CurrentMailStatus()
-    if YouGotMailOptions.mail then return("YGM mail: true") else return("YGM mail: false") end
-end
-
-function CurrentMailTime()
-    if YouGotMailOptions.time then return("YGM time: " .. YouGotMailOptions.time) end
-end
-
-function CurrentVoice()
-    if YouGotMailOptions.voice then return("YGM voice: " .. YouGotMailOptions.voice) end
-end
-
-function ResetMailFlags()
-    YouGotMailOptions.mail = false
-    YouGotMailOptions.time = nil
-end
-
------------------
--- Initialize
------------------
-function Initialize()
-    if not YouGotMailOptions then
-        YouGotMailOptions = {}
-    end
-    if not YouGotMailOptions.voice then
-        YouGotMailOptions.voice = 1
-    end
-end
-
------------------
--- Slash Commands
------------------
-function SlashCommand()
-    InterfaceOptionsFrame_OpenToCategory("YouGotMail")
-end
-
-
------------------
--- Options
------------------
-
-local function UncheckAllRadios()
-    local frame = EnumerateFrames()
-    while frame do
-        if frame:GetName() and string.find(frame:GetName(), "ygmRadio") then
-            frame:SetChecked(false)
-        end
-        frame = EnumerateFrames(frame)
-    end
-end
-
-local function CreateOptionsPanel()
-    Options:Hide()
-    Options.name = "YouGotMail"
-
-    local panelWidth = 600 -- InterfaceOptionsFramePanelContainer:GetWidth() -- ~623
-    local wideWidth = panelWidth - 40
-
-    local title = Options:CreateFontString(nil, "BACKGROUND", "GameFontNormalLarge")
-    title:SetJustifyH("LEFT")
-    title:SetJustifyV("BOTTOM")
-    title:SetText(GetAddOnMetadata(addonName, "Title"))
-    title:SetPoint("TOPLEFT", 10, -10)
-
-    local version = Options:CreateFontString(nil, "BACKGROUND", "GameFontNormalSmall")
-    version:SetJustifyH("LEFT")
-    version:SetJustifyV("BOTTOM")
-    version:SetText("version " .. GetAddOnMetadata(addonName, "Version"))
-    version:SetPoint("BOTTOMLEFT", title, "BOTTOMRIGHT", 5, 2)
-
-    local author = Options:CreateFontString(nil, "BACKGROUND", "GameFontNormalSmall")
-    author:SetJustifyH("LEFT")
-    author:SetJustifyV("BOTTOM")
-    author:SetText("by " .. GetAddOnMetadata(addonName, "Author"))
-    author:SetPoint("BOTTOMLEFT", version, "BOTTOMRIGHT", 5, 0)
-
-    local desc = Options:CreateFontString(nil, "BACKGROUND", "GameFontHighlight")
-    desc:SetJustifyH("LEFT")
-    desc:SetJustifyV("BOTTOM")
-    desc:SetPoint("TOPLEFT", 10, -30)
-    desc:SetText("An addon that notifies you when you have mail.")
-
-    for k,v in pairs(items) do
-        radioName = "ygmRadio" .. k
-        yoffset = -50 - (k*20)
-        local frame = CreateFrame("CheckButton", radioName, Options, "UIRadioButtonTemplate")
-        frame:SetHeight(20)
-        frame:SetWidth(20)
-        frame:ClearAllPoints()
-        frame:SetPoint("TOPLEFT", 20, yoffset)
-        _G[frame:GetName() .. "Text"]:SetText(v)
-        if k == YouGotMailOptions.voice then
-            frame:SetChecked(true)
+local function CheckTheMail()
+    if (HasNewMail()) then
+        Debug("Mail detected.")
+        if (YouGotMail_SavedVars.mail == false or time() > YouGotMail_SavedVars.time + 3600) then
+            YouGotMail_SavedVars.mail = true
+            YouGotMail_SavedVars.time = time()
+            PlayTrack(YouGotMail_SavedVars.voice)
         else
-            frame:SetChecked(false)
+            Debug("YGM spam prevented: " .. time())
         end
-        frame:SetScript("OnClick", function(self)
-            UncheckAllRadios()
-            self:SetChecked(true)
-            ChangeTrack(k)
-        end)
+    else
+        YouGotMail_SavedVars.mail = false
+        YouGotMail_SavedVars.time = 0
+    end
+end
+
+local function OnVoiceOptionChanged(newVoice)
+    if type(newVoice) ~= "number" then
+        Debug("Invalid voice setting: " .. tostring(newVoice))
+        return
+    end
+    YouGotMail_SavedVars.voice = newVoice
+    PlayTrack(YouGotMail_SavedVars.voice)
+    Debug("Voice setting updated to: " .. newVoice)
+end
+
+local function SlashCommand()
+    Debug("Opening YouGotMail options.")
+    Settings.OpenToCategory(category:GetID())
+end
+
+-- Settings
+do
+    local name = "Select Voice"
+    local variable = "selectedVoice"
+    local variableKey = "voice"
+    local variableTbl = YouGotMail_SavedVars
+    local defaultValue = 1
+
+    if not variableTbl[variableKey] then
+        variableTbl[variableKey] = defaultValue
     end
 
-    local playVoice = CreateFrame("Button", nil, Options, "UIPanelButtonTemplate")
-    playVoice:SetWidth(175)
-    playVoice:SetHeight(24)
-    playVoice:SetPoint("BOTTOM", 0, 20)
-    playVoice:SetText("Play Voice")
-    playVoice:RegisterForClicks("AnyUp")
-    playVoice:SetScript("OnClick", function()
-        PlayNotification()
+    local setting = Settings.RegisterAddOnSetting(category, variable, variableKey, variableTbl, Settings.VarType.Number, name, defaultValue)
+
+    setting:SetValueChangedCallback(function()
+        OnVoiceOptionChanged(setting:GetValue())
     end)
 
-    -- Add the options panel to the Blizzard list
-    InterfaceOptions_AddCategory(Options)
+    local tooltip = "Select the voice to use."
+    Settings.CreateDropdown(category, setting, GetOptions, tooltip)
 end
 
+Settings.RegisterAddOnCategory(category)
 
------------------
--- Events
------------------
-local f = CreateFrame("Frame")
+-- Event handling frame
+local eventFrame = CreateFrame("Frame")
 
-f:RegisterEvent("UPDATE_PENDING_MAIL")
-f:RegisterEvent("PLAYER_LOGIN")
-f:RegisterEvent("ADDON_LOADED")
-
-f:SetScript("OnEvent",
-    function (self, event, arg1, ...)
-        if event == "ADDON_LOADED" and arg1 == addonName then
+-- Event handler function
+eventFrame:SetScript("OnEvent", function(self, event, ...)
+    if event == "ADDON_LOADED" then
+        local loadedAddonName = ...
+        if loadedAddonName == addonName then
             SLASH_YOUGOTMAIL1 = "/ygm"
             SlashCmdList["YOUGOTMAIL"] = SlashCommand
-            Initialize()
-            CreateOptionsPanel()
-            Debug("YGM initialized.")
             self:UnregisterEvent("ADDON_LOADED")
-            return
         end
-        Debug("YGM: " .. event)
-        CheckTheMail()
     end
-)
 
+    CheckTheMail()
+end)
+
+-- Register the events
+eventFrame:RegisterEvent("UPDATE_PENDING_MAIL")
+eventFrame:RegisterEvent("PLAYER_LOGIN")
+eventFrame:RegisterEvent("ADDON_LOADED")
 
 -- Notes:
 -- If a player already has been notified that they have mail, we do not
--- to spam them with notices. So we record the time at which they have
--- been notified, and then check that it's been at least an hour before
--- we notify them again.
+-- want to spam them with notices. So we record the time at which they
+-- have been notified, and then check that it's been at least an hour
+-- before we notify them again.
 
 -- The code that controls that behavior is
--- time() > YouGotMailOptions.time + 3600
+-- time() > YouGotMail_SavedVars.time + 3600
