@@ -1,84 +1,75 @@
+-- Variables
+local addonName = ...
+local debugmode = false
+
+local voices = {
+    { label = "AOL You Got Mail", path = "YouGotMail.ogg" },
+    { label = "Illidan (voiced by Scooba)", path = "voices\\_illidan_1_scooba.ogg", contributor = "Scooba" },
+    { label = "Blood Elf male #1 (voiced by Rufphus)", path = "voices\\blood_elf_male_1_rufphus.ogg", contributor = "Rufphus" },
+    { label = "Blood Elf male #2 (voiced by Saenokda)", path = "voices\\blood_elf_male_2_saenokda.ogg", contributor = "Saenokda" },
+    { label = "Draenei male #1 (voiced by Saenokda)", path = "voices\\draenei_male_1_saenokda.ogg", contributor = "Saenokda" },
+    { label = "Dwarf male #1 (voiced by Toady)", path = "voices\\dwarf_male_1_toady.ogg", contributor = "Toady" },
+    { label = "Gnome male #1 (voiced by Toady)", path = "voices\\gnome_male_1_toady.ogg", contributor = "Toady" },
+    { label = "Gnome male #2 (voiced by Scooba)", path = "voices\\gnome_male_2_scooba.ogg", contributor = "Scooba" },
+    { label = "Goblin male #1 (voiced by Toady)", path = "voices\\goblin_male_1_toady.ogg", contributor = "Toady" },
+    { label = "Goblin male #2 (voiced by Toady)", path = "voices\\goblin_male_2_toady.ogg", contributor = "Toady" },
+    { label = "Human male #1 (voiced by Saenokda)", path = "voices\\human_male_1_saenokda.ogg", contributor = "Saenokda" },
+    { label = "Human male #2 (voiced by Saenokda)", path = "voices\\human_male_2_saenokda.ogg", contributor = "Saenokda" },
+    { label = "Tauren male #1 (voiced by Rufphus)", path = "voices\\tauren_male_1_rufphus.ogg", contributor = "Rufphus" },
+    { label = "Tauren male #2 (voiced by Rufphus)", path = "voices\\tauren_male_2_rufphus.ogg", contributor = "Rufphus" },
+    { label = "Troll male #1 (voiced by Zuljawa)", path = "voices\\troll_male_1_zuljawa.ogg", contributor = "Zuljawa" },
+    { label = "Troll male #2 (voiced by Zuljawa)", path = "voices\\troll_male_2_zuljawa.ogg", contributor = "Zuljawa" },
+    { label = "Troll male #3 (voiced by Zuljawa)", path = "voices\\troll_male_3_zuljawa.ogg", contributor = "Zuljawa" },
+    { label = "Troll male #4 (voiced by Zuljawa)", path = "voices\\troll_male_4_zuljawa.ogg", contributor = "Zuljawa" },
+    { label = "Undead male #1 (voiced by Rufphus)", path = "voices\\undead_male_1_rufphus.ogg", contributor = "Rufphus" },
+    { label = "Undead male #2 (voiced by Saenokda)", path = "voices\\undead_male_2_saenokda.ogg", contributor = "Saenokda" },
+    { label = "I got mail, YAY! (from Crank Yankers)", path = "voices\\i_got_mail_yay_i_got_mail_yay.ogg" },
+}
+
+local addonPath = "Interface\\AddOns\\" .. addonName .. "\\"
+
 -- Saved variables
-if not YouGotMail_SavedVars then
+if type(YouGotMail_SavedVars) ~= "table" then
     YouGotMail_SavedVars = {}
 end
 
-if not YouGotMail_SavedVars.voice then
+if type(YouGotMail_SavedVars.voice) ~= "number"
+    or YouGotMail_SavedVars.voice % 1 ~= 0
+    or not voices[YouGotMail_SavedVars.voice] then
     YouGotMail_SavedVars.voice = 1
 end
 
-if not YouGotMail_SavedVars.mail then
+if type(YouGotMail_SavedVars.mail) ~= "boolean" then
     YouGotMail_SavedVars.mail = false
 end
 
-if not YouGotMail_SavedVars.time or YouGotMail_SavedVars.time == nil then
+if type(YouGotMail_SavedVars.time) ~= "number" or YouGotMail_SavedVars.time < 0 then
     YouGotMail_SavedVars.time = 0
 end
 
--- Variables
-local addonName, addonTable = ...
-local debugmode = false
-local _G = _G
-
 local category = Settings.RegisterVerticalLayoutCategory("YouGotMail")
-
-local voices = {
-    "Interface\\AddOns\\YouGotMail\\YouGotMail.ogg",
-    "Interface\\Addons\\YouGotMail\\voices\\_illidan_1_scooba.ogg",
-    "Interface\\Addons\\YouGotMail\\voices\\blood_elf_male_1_rufphus.ogg",
-    "Interface\\Addons\\YouGotMail\\voices\\blood_elf_male_2_saenokda.ogg",
-    "Interface\\Addons\\YouGotMail\\voices\\draenei_male_1_saenokda.ogg",
-    "Interface\\Addons\\YouGotMail\\voices\\dwarf_male_1_toady.ogg",
-    "Interface\\Addons\\YouGotMail\\voices\\gnome_male_1_toady.ogg",
-    "Interface\\Addons\\YouGotMail\\voices\\gnome_male_2_scooba.ogg",
-    "Interface\\Addons\\YouGotMail\\voices\\goblin_male_1_toady.ogg",
-    "Interface\\Addons\\YouGotMail\\voices\\goblin_male_2_toady.ogg",
-    "Interface\\Addons\\YouGotMail\\voices\\human_male_1_saenokda.ogg",
-    "Interface\\Addons\\YouGotMail\\voices\\human_male_2_saenokda.ogg",
-    "Interface\\Addons\\YouGotMail\\voices\\tauren_male_1_rufphus.ogg",
-    "Interface\\Addons\\YouGotMail\\voices\\tauren_male_2_rufphus.ogg",
-    "Interface\\Addons\\YouGotMail\\voices\\troll_male_1_zuljawa.ogg",
-    "Interface\\Addons\\YouGotMail\\voices\\troll_male_2_zuljawa.ogg",
-    "Interface\\Addons\\YouGotMail\\voices\\troll_male_3_zuljawa.ogg",
-    "Interface\\Addons\\YouGotMail\\voices\\troll_male_4_zuljawa.ogg",
-    "Interface\\Addons\\YouGotMail\\voices\\undead_male_1_rufphus.ogg",
-    "Interface\\Addons\\YouGotMail\\voices\\undead_male_2_saenokda.ogg",
-    "Interface\\Addons\\YouGotMail\\voices\\i_got_mail_yay_i_got_mail_yay.ogg"
-}
 
 -- Functions
 local function GetOptions()
     local container = Settings.CreateControlTextContainer()
-    container:Add(1, "AOL You Got Mail")
-    container:Add(2, "Illidan (voiced by Scooba)")
-    container:Add(3, "Blood Elf male #1 (voiced by Rufphus)")
-    container:Add(4, "Blood Elf male #2 (voiced by Saenokda)")
-    container:Add(5, "Draenei male #1 (voiced by Saenokda)")
-    container:Add(6, "Dwarf male #1 (voiced by Toady)")
-    container:Add(7, "Gnome male #1 (voiced by Toady)")
-    container:Add(8, "Gnome male #2 (voiced by Scooba)")
-    container:Add(9, "Goblin male #1 (voiced by Toady)")
-    container:Add(10, "Goblin male #2 (voiced by Toady)")
-    container:Add(11, "Human male #1 (voiced by Saenokda)")
-    container:Add(12, "Human male #2 (voiced by Saenokda)")
-    container:Add(13, "Tauren male #1 (voiced by Rufphus)")
-    container:Add(14, "Tauren male #2 (voiced by Rufphus)")
-    container:Add(15, "Troll male #1 (voiced by Zuljawa)")
-    container:Add(16, "Troll male #2 (voiced by Zuljawa)")
-    container:Add(17, "Troll male #3 (voiced by Zuljawa)")
-    container:Add(18, "Troll male #4 (voiced by Zuljawa)")
-    container:Add(19, "Undead male #1 (voiced by Rufphus)")
-    container:Add(20, "Undead male #2 (voiced by Saenokda)")
-    container:Add(21, "I got mail, YAY! (from Crank Yankers)")
+    for index, voice in ipairs(voices) do
+        container:Add(index, voice.label)
+    end
     return container:GetData()
 end
 
-function Debug(text)
+local function Debug(text)
     if debugmode then print(text) end
 end
 
 local function PlayTrack(n)
-    PlaySoundFile(voices[tonumber(n)])
+    local voice = voices[tonumber(n)]
+    if not voice then
+        YouGotMail_SavedVars.voice = 1
+        voice = voices[1]
+    end
+
+    PlaySoundFile(addonPath .. voice.path)
 end
 
 local function CheckTheMail()
@@ -148,9 +139,13 @@ eventFrame:SetScript("OnEvent", function(self, event, ...)
             SlashCmdList["YOUGOTMAIL"] = SlashCommand
             self:UnregisterEvent("ADDON_LOADED")
         end
+
+        return
     end
 
-    CheckTheMail()
+    if event == "PLAYER_LOGIN" or event == "UPDATE_PENDING_MAIL" then
+        CheckTheMail()
+    end
 end)
 
 -- Register the events
