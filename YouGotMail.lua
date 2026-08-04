@@ -26,6 +26,19 @@ local voices = {
     { label = "I got mail, YAY! (from Crank Yankers)", path = "voices\\i_got_mail_yay_i_got_mail_yay.ogg" },
 }
 
+local soundChannels = {
+    { label = "Master", value = "Master" },
+    { label = "Sound Effects", value = "SFX" },
+    { label = "Dialog", value = "Dialog" },
+    { label = "Music", value = "Music" },
+    { label = "Ambience", value = "Ambience" },
+}
+
+local validSoundChannels = {}
+for _, soundChannel in ipairs(soundChannels) do
+    validSoundChannels[soundChannel.value] = true
+end
+
 local addonPath = "Interface\\AddOns\\" .. addonName .. "\\"
 
 -- Saved variables
@@ -47,6 +60,15 @@ if type(YouGotMail_SavedVars.time) ~= "number" or YouGotMail_SavedVars.time < 0 
     YouGotMail_SavedVars.time = 0
 end
 
+if type(YouGotMail_SavedVars.enabled) ~= "boolean" then
+    YouGotMail_SavedVars.enabled = true
+end
+
+if type(YouGotMail_SavedVars.soundChannel) ~= "string"
+    or not validSoundChannels[YouGotMail_SavedVars.soundChannel] then
+    YouGotMail_SavedVars.soundChannel = "Master"
+end
+
 local category = Settings.RegisterVerticalLayoutCategory("YouGotMail")
 
 -- Functions
@@ -54,6 +76,14 @@ local function GetOptions()
     local container = Settings.CreateControlTextContainer()
     for index, voice in ipairs(voices) do
         container:Add(index, voice.label)
+    end
+    return container:GetData()
+end
+
+local function GetSoundChannelOptions()
+    local container = Settings.CreateControlTextContainer()
+    for _, soundChannel in ipairs(soundChannels) do
+        container:Add(soundChannel.value, soundChannel.label)
     end
     return container:GetData()
 end
@@ -69,13 +99,15 @@ local function PlayTrack(n)
         voice = voices[1]
     end
 
-    PlaySoundFile(addonPath .. voice.path)
+    PlaySoundFile(addonPath .. voice.path, YouGotMail_SavedVars.soundChannel)
 end
 
 local function CheckTheMail()
     if (HasNewMail()) then
         Debug("Mail detected.")
-        if (YouGotMail_SavedVars.mail == false or time() > YouGotMail_SavedVars.time + 3600) then
+        if not YouGotMail_SavedVars.enabled then
+            Debug("Notifications are disabled.")
+        elseif (YouGotMail_SavedVars.mail == false or time() > YouGotMail_SavedVars.time + 3600) then
             YouGotMail_SavedVars.mail = true
             YouGotMail_SavedVars.time = time()
             PlayTrack(YouGotMail_SavedVars.voice)
@@ -88,16 +120,6 @@ local function CheckTheMail()
     end
 end
 
-local function OnVoiceOptionChanged(newVoice)
-    if type(newVoice) ~= "number" then
-        Debug("Invalid voice setting: " .. tostring(newVoice))
-        return
-    end
-    YouGotMail_SavedVars.voice = newVoice
-    PlayTrack(YouGotMail_SavedVars.voice)
-    Debug("Voice setting updated to: " .. newVoice)
-end
-
 local function SlashCommand()
     Debug("Opening YouGotMail options.")
     Settings.OpenToCategory(category:GetID())
@@ -105,24 +127,54 @@ end
 
 -- Settings
 do
-    local name = "Select Voice"
-    local variable = "selectedVoice"
-    local variableKey = "voice"
-    local variableTbl = YouGotMail_SavedVars
-    local defaultValue = 1
+    local enabledSetting = Settings.RegisterAddOnSetting(
+        category,
+        "notificationsEnabled",
+        "enabled",
+        YouGotMail_SavedVars,
+        Settings.VarType.Boolean,
+        "Enable Notifications",
+        true
+    )
+    Settings.CreateCheckbox(category, enabledSetting, "Play a voice notification when new mail is detected.")
 
-    if not variableTbl[variableKey] then
-        variableTbl[variableKey] = defaultValue
-    end
+    local voiceSetting = Settings.RegisterAddOnSetting(
+        category,
+        "selectedVoice",
+        "voice",
+        YouGotMail_SavedVars,
+        Settings.VarType.Number,
+        "Voice",
+        1
+    )
+    Settings.CreateDropdown(category, voiceSetting, GetOptions, "Select the voice used for mail notifications.")
 
-    local setting = Settings.RegisterAddOnSetting(category, variable, variableKey, variableTbl, Settings.VarType.Number, name, defaultValue)
+    local soundChannelSetting = Settings.RegisterAddOnSetting(
+        category,
+        "selectedSoundChannel",
+        "soundChannel",
+        YouGotMail_SavedVars,
+        Settings.VarType.String,
+        "Sound Channel",
+        "Master"
+    )
+    Settings.CreateDropdown(
+        category,
+        soundChannelSetting,
+        GetSoundChannelOptions,
+        "Use the selected in-game sound channel and its volume setting."
+    )
 
-    setting:SetValueChangedCallback(function()
-        OnVoiceOptionChanged(setting:GetValue())
-    end)
-
-    local tooltip = "Select the voice to use."
-    Settings.CreateDropdown(category, setting, GetOptions, tooltip)
+    local previewInitializer = CreateSettingsButtonInitializer(
+        "Preview Voice",
+        "Play",
+        function()
+            PlayTrack(YouGotMail_SavedVars.voice)
+        end,
+        "Play the selected voice through the selected sound channel.",
+        true
+    )
+    Settings.RegisterInitializer(category, previewInitializer)
 end
 
 Settings.RegisterAddOnCategory(category)
