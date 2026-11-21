@@ -41,35 +41,39 @@ end
 
 local addonPath = "Interface\\AddOns\\" .. addonName .. "\\"
 
+local category
+
 -- Saved variables
-if type(YouGotMail_SavedVars) ~= "table" then
-    YouGotMail_SavedVars = {}
-end
+-- SavedVariables are loaded after this file runs (just before ADDON_LOADED),
+-- so defaults must be applied from the ADDON_LOADED handler, not at file scope.
+local function InitSavedVars()
+    if type(YouGotMail_SavedVars) ~= "table" then
+        YouGotMail_SavedVars = {}
+    end
 
-if type(YouGotMail_SavedVars.voice) ~= "number"
-    or YouGotMail_SavedVars.voice % 1 ~= 0
-    or not voices[YouGotMail_SavedVars.voice] then
-    YouGotMail_SavedVars.voice = 1
-end
+    if type(YouGotMail_SavedVars.voice) ~= "number"
+        or YouGotMail_SavedVars.voice % 1 ~= 0
+        or not voices[YouGotMail_SavedVars.voice] then
+        YouGotMail_SavedVars.voice = 1
+    end
 
-if type(YouGotMail_SavedVars.mail) ~= "boolean" then
-    YouGotMail_SavedVars.mail = false
-end
+    if type(YouGotMail_SavedVars.mail) ~= "boolean" then
+        YouGotMail_SavedVars.mail = false
+    end
 
-if type(YouGotMail_SavedVars.time) ~= "number" or YouGotMail_SavedVars.time < 0 then
-    YouGotMail_SavedVars.time = 0
-end
+    if type(YouGotMail_SavedVars.time) ~= "number" or YouGotMail_SavedVars.time < 0 then
+        YouGotMail_SavedVars.time = 0
+    end
 
-if type(YouGotMail_SavedVars.enabled) ~= "boolean" then
-    YouGotMail_SavedVars.enabled = true
-end
+    if type(YouGotMail_SavedVars.enabled) ~= "boolean" then
+        YouGotMail_SavedVars.enabled = true
+    end
 
-if type(YouGotMail_SavedVars.soundChannel) ~= "string"
-    or not validSoundChannels[YouGotMail_SavedVars.soundChannel] then
-    YouGotMail_SavedVars.soundChannel = "Master"
+    if type(YouGotMail_SavedVars.soundChannel) ~= "string"
+        or not validSoundChannels[YouGotMail_SavedVars.soundChannel] then
+        YouGotMail_SavedVars.soundChannel = "Master"
+    end
 end
-
-local category = Settings.RegisterVerticalLayoutCategory("YouGotMail")
 
 -- Functions
 local function GetOptions()
@@ -103,6 +107,8 @@ local function PlayTrack(n)
 end
 
 local function CheckTheMail()
+    if not category then return end -- not initialized yet (before ADDON_LOADED)
+
     if (HasNewMail()) then
         Debug("Mail detected.")
         if not YouGotMail_SavedVars.enabled then
@@ -126,10 +132,12 @@ local function SlashCommand()
 end
 
 -- Settings
-do
+local function RegisterSettings()
+    category = Settings.RegisterVerticalLayoutCategory("YouGotMail")
+
     local enabledSetting = Settings.RegisterAddOnSetting(
         category,
-        "notificationsEnabled",
+        "YouGotMail_Enabled",
         "enabled",
         YouGotMail_SavedVars,
         Settings.VarType.Boolean,
@@ -140,7 +148,7 @@ do
 
     local voiceSetting = Settings.RegisterAddOnSetting(
         category,
-        "selectedVoice",
+        "YouGotMail_Voice",
         "voice",
         YouGotMail_SavedVars,
         Settings.VarType.Number,
@@ -151,7 +159,7 @@ do
 
     local soundChannelSetting = Settings.RegisterAddOnSetting(
         category,
-        "selectedSoundChannel",
+        "YouGotMail_SoundChannel",
         "soundChannel",
         YouGotMail_SavedVars,
         Settings.VarType.String,
@@ -175,9 +183,9 @@ do
         true
     )
     Settings.RegisterInitializer(category, previewInitializer)
-end
 
-Settings.RegisterAddOnCategory(category)
+    Settings.RegisterAddOnCategory(category)
+end
 
 -- Event handling frame
 local eventFrame = CreateFrame("Frame")
@@ -187,6 +195,8 @@ eventFrame:SetScript("OnEvent", function(self, event, ...)
     if event == "ADDON_LOADED" then
         local loadedAddonName = ...
         if loadedAddonName == addonName then
+            InitSavedVars()
+            RegisterSettings()
             SLASH_YOUGOTMAIL1 = "/ygm"
             SlashCmdList["YOUGOTMAIL"] = SlashCommand
             self:UnregisterEvent("ADDON_LOADED")
