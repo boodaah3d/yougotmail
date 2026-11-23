@@ -103,7 +103,8 @@ local function PlayTrack(n)
         voice = voices[1]
     end
 
-    PlaySoundFile(addonPath .. voice.path, YouGotMail_SavedVars.soundChannel)
+    local willPlay = PlaySoundFile(addonPath .. voice.path, YouGotMail_SavedVars.soundChannel)
+    return willPlay, voice
 end
 
 local function CheckTheMail()
@@ -126,9 +127,36 @@ local function CheckTheMail()
     end
 end
 
-local function SlashCommand()
-    Debug("Opening YouGotMail options.")
-    Settings.OpenToCategory(category:GetID())
+-- Plays the notification as if new mail had arrived, without touching the
+-- once-per-hour spam timer, so it can be repeated and works without real mail.
+local function TestNotification()
+    local willPlay, voice = PlayTrack(YouGotMail_SavedVars.voice)
+    local channel = YouGotMail_SavedVars.soundChannel
+
+    if willPlay then
+        print(("YouGotMail: test notification played \"%s\" on the %s channel."):format(voice.label, channel))
+    else
+        print(("YouGotMail: could not play \"%s\" on the %s channel. Check that sound and that channel are enabled."):format(voice.label, channel))
+    end
+
+    if not YouGotMail_SavedVars.enabled then
+        print("YouGotMail: note that notifications are currently disabled, so real mail will not play a sound.")
+    end
+end
+
+local function SlashCommand(msg)
+    local command = strtrim(msg or ""):lower()
+
+    if command == "test" then
+        TestNotification()
+    elseif command == "" then
+        Debug("Opening YouGotMail options.")
+        Settings.OpenToCategory(category:GetID())
+    else
+        print("YouGotMail commands:")
+        print("  /ygm - open the options")
+        print("  /ygm test - play the mail notification now")
+    end
 end
 
 -- Settings

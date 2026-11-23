@@ -7,5 +7,8 @@ of an in-game voice, choose its sound channel, and preview it.
 
 Access the options from the Addon Options Interface, or /ygm to go directly there.
 
+Use /ygm test to play the mail notification right away with your selected voice and
+sound channel, without needing new mail.
+
 Note: The announcement is made when a user logs on or reloads.
 Additional announcements will be made only once per hour to prevent notification spam.
